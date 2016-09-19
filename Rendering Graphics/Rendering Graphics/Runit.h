@@ -1,7 +1,7 @@
 #pragma once
 #include "Drawing.h"
 
-class Runit
+class BaseApplication
 {
 public:
 	virtual int Start() = 0;
@@ -10,7 +10,7 @@ public:
 	virtual void Stop() = 0;
 };
 
-class App : public Runit
+class App : public BaseApplication
 {
 public:
 	App();

@@ -1,5 +1,41 @@
 #include "Drawing.h"
 
+Drawing::Drawing()
+{
+	/*startupShade();*/
+}
+
+Drawing::~Drawing()
+{
+	glDeleteProgram(m_shader);
+}
+
+//void Drawing::create(unsigned int a_maxLines = 0xffff, unsigned int a_maxTris = 0xffff, unsigned int a_max2DLines = 0xff, unsigned int a_max2DTris = 0xff)
+//{
+//	//if (sm_singleton == nullptr)
+//	//	sm_singleton = new Drawing(a_maxLines, a_maxTris, a_max2DLines, a_max2DTris);
+//}
+
+void Drawing::destroy()
+{
+
+}
+
+void Drawing::clear()
+{
+
+}
+
+void Drawing::draw(const glm::mat4& a_projectionView)
+{
+
+}
+
+void Drawing::draw(const glm::mat4& a_projection, const glm::mat4& a_view)
+{
+
+}
+
 void Drawing::generateGrid(unsigned int rows, unsigned int cols)
 {
 	Vertex* aoVertices = new Vertex[rows * cols];
@@ -49,7 +85,8 @@ void Drawing::generateGrid(unsigned int rows, unsigned int cols)
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, (rows - 1) * (cols - 1) * 6 *
 		sizeof(unsigned int), auiIndices, GL_STATIC_DRAW);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
 	// Generate our GL Buffers
 	// Lets move these so that they are all generated together
 	glGenBuffers(1, &m_VBO);
@@ -60,43 +97,88 @@ void Drawing::generateGrid(unsigned int rows, unsigned int cols)
 	// ....Code Segment here to bind and fill VBO + IBO
 	glBindVertexArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
 
 	delete[] aoVertices;
 }
 
 void Drawing::startupShade()
 {
-	const char* vsSource = "#version 410\n \layout(location=0) in vec4 position; \layout(location=1) in vec4 colour; \out vec4 vColour; \
-	uniform mat4 projectionViewWorldMatrix; \
-	void main() { vColour = colour; gl_Position = projectionViewWorldMatrix * position;}";
+	const char* vsSource;
+	std::string vs = ReadFromFile("vsInfo.txt");
+	vsSource = vs.c_str();
 
-	const char* fsSource = "#version 410\n \
-	in vec4 vColour; \
-	out vec4 fragColor; \
-	void main() { fragColor = vColour; }";
+	const char* fsSource;
+	std::string fs = ReadFromFile("fsInfo.txt");
+	fsSource = fs.c_str();
 
 	int success = GL_FALSE;
 	unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
 	unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+
 	glShaderSource(vertexShader, 1, (const char**)&vsSource, 0);
 	glCompileShader(vertexShader);
 	glShaderSource(fragmentShader, 1, (const char**)&fsSource, 0);
 	glCompileShader(fragmentShader);
-	m_programID = glCreateProgram();
-	glAttachShader(m_programID, vertexShader);
-	glAttachShader(m_programID, fragmentShader);
-	glLinkProgram(m_programID);
-	glGetProgramiv(m_programID, GL_LINK_STATUS, &success);
-	if (success == GL_FALSE) {
+
+	m_shader = glCreateProgram();
+	glAttachShader(m_shader, vertexShader);
+	glAttachShader(m_shader, fragmentShader);
+	glLinkProgram(m_shader);
+
+	glGetProgramiv(m_shader, GL_LINK_STATUS, &success);
+	if (success == GL_FALSE)
+	{
 		int infoLogLength = 0;
-		glGetProgramiv(m_programID, GL_INFO_LOG_LENGTH, &infoLogLength);
+		glGetProgramiv(m_shader, GL_INFO_LOG_LENGTH, &infoLogLength);
 		char* infoLog = new char[infoLogLength];
-		glGetProgramInfoLog(m_programID, infoLogLength, 0, infoLog);
+		glGetProgramInfoLog(m_shader, infoLogLength, 0, infoLog);
 		printf("Error: Failed to link shader program!\n");
 		printf("%s\n", infoLog);
 		delete[] infoLog;
 	}
 	glDeleteShader(fragmentShader);
 	glDeleteShader(vertexShader);
+
+}
+
+std::string Drawing::ReadFromFile(std::string text)
+{
+	std::string data;
+	std::string container;
+	std::ifstream file(text);
+
+	if (file.is_open())
+	{
+		while (std::getline(file, data))
+		{
+			container += data + "\n";
+		}
+		file.close();
+	}
+	return container;
+}
+
+void Drawing::generatePlane(mat4 b, int rows, int cols)
+{
+	glUseProgram(m_shader);
+	unsigned int projectionViewUniform =
+		glGetUniformLocation(m_shader, "projectionViewWorldMatrix");
+	glUniformMatrix4fv(projectionViewUniform, 1, false,
+		glm::value_ptr(b));
+	glBindVertexArray(m_VAO);
+	unsigned int indexCount = rows * cols * 6;
+	glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);
+
+}
+
+void Drawing::generateCube()
+{
+
+}
+
+void Drawing::generateSphere()
+{
+
 }

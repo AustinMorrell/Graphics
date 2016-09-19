@@ -4,7 +4,7 @@ float previousTime = 0;
 
 int main()
 {
-	Runit* DatProgram = new App();
+	BaseApplication* DatProgram = new Drawing();
 	if (DatProgram->Start() > 0)
 	{
 		while (DatProgram->Update() == true)

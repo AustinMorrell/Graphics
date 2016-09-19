@@ -2,6 +2,7 @@
 #include "src/gl_core_4_4.h"
 #include <GLFW/glfw3.h>
 #include <iostream>
+#include <fstream>
 #define GLM_SWIZZLE
 #define GLM_FORCE_PURE
 #include "src\Gizmos.h"
